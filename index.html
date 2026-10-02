@@ -1,0 +1,1048 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0" />
+    <title>Yatri Creation - Tax Invoice</title>
+
+    <!-- Bootstrap 5 CDN -->
+    <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" />
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+    <!-- Flatpickr (Date Picker) -->
+    <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <!-- html2pdf CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+    <style>
+        :root {
+            --red: #c0392b;
+            --light-red: #f9e8e8;
+            --border: #c0392b;
+        }
+
+        body {
+            background: #f0f0f0;
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+
+        /* ===== SCREEN CONTROLS ===== */
+        .screen-controls {
+            max-width: 900px;
+            margin: 0 auto 16px;
+        }
+
+        /* ===== BILL WRAPPER ===== */
+        #bill-wrapper {
+            max-width: 900px;
+            margin: 0 auto;
+            background: #fff;
+            border: 3px solid var(--red);
+            padding: 0;
+        }
+
+        /* ===== DECORATIVE BORDER BAR ===== */
+        .deco-bar {
+            background: var(--red);
+            height: 14px;
+            background-image: repeating-linear-gradient(90deg,
+                    transparent,
+                    transparent 18px,
+                    rgba(255, 255, 255, 0.25) 18px,
+                    rgba(255, 255, 255, 0.25) 22px);
+        }
+
+        /* ===== HEADER ===== */
+        .bill-header {
+            padding: 6px 14px 4px;
+            position: relative;
+        }
+
+        .bill-header .top-line {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .bill-header .tagline {
+            text-align: center;
+            font-size: 11px;
+            color: var(--red);
+            font-weight: bold;
+            flex: 1;
+            padding-top: 2px;
+        }
+
+        .bill-header .phone-block {
+            text-align: right;
+            font-size: 11px;
+            color: var(--red);
+            font-weight: bold;
+            white-space: nowrap;
+        }
+
+        .logo-name-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 2px;
+        }
+
+        .logo-box {
+            border: 2px solid var(--red);
+            padding: 2px 6px;
+            font-size: 22px;
+            font-weight: 900;
+            color: var(--red);
+            line-height: 1;
+            font-style: italic;
+        }
+
+        .company-name {
+            font-size: 36px;
+            font-weight: 900;
+            color: var(--red);
+            letter-spacing: 1px;
+            line-height: 1;
+            border-bottom: 2px solid var(--red);
+        }
+
+        .company-address {
+            text-align: center;
+            font-size: 12px;
+            color: #333;
+            margin-top: 2px;
+        }
+
+        /* ===== INFO GRID ===== */
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            border-top: 1.5px solid var(--border);
+            border-bottom: 1.5px solid var(--border);
+            font-size: 12px;
+        }
+
+        .info-grid .cell {
+            padding: 3px 8px;
+            border-right: 1.5px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .info-grid .cell:last-child {
+            border-right: none;
+        }
+
+        .info-grid .cell label {
+            font-weight: bold;
+            margin-right: 2px;
+            white-space: nowrap;
+        }
+
+        /* ===== CUSTOMER / TAX SECTION ===== */
+        .customer-tax-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            border-bottom: 1.5px solid var(--border);
+            font-size: 12px;
+        }
+
+        .customer-block {
+            padding: 4px 8px;
+            border-right: 1.5px solid var(--border);
+        }
+
+        .customer-block .section-title {
+            text-align: center;
+            font-weight: bold;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 4px;
+            padding-bottom: 2px;
+        }
+
+        .gst-block {
+            padding: 4px 8px;
+        }
+
+        .gst-block .section-title {
+            text-align: right;
+            font-weight: bold;
+        }
+
+        .field-line {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            margin-bottom: 4px;
+        }
+
+        .field-line label {
+            font-weight: bold;
+            white-space: nowrap;
+        }
+
+        .field-line input[type="text"] {
+            border: none;
+            border-bottom: 1px solid #999;
+            outline: none;
+            flex: 1;
+            font-size: 12px;
+            padding: 0 2px;
+            background: transparent;
+        }
+
+        /* ===== STATE DROPDOWN ===== */
+        .state-select {
+            border: none;
+            border-bottom: 1px solid #999;
+            outline: none;
+            flex: 1;
+            font-size: 12px;
+            padding: 0 2px;
+            background: transparent;
+            cursor: pointer;
+            color: #333;
+            -webkit-appearance: none;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath fill='%23c0392b' d='M0 0l5 6 5-6z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 2px center;
+            padding-right: 14px;
+        }
+
+        .state-select:focus {
+            border-bottom-color: var(--red);
+        }
+
+        /* ===== DATE INPUT WRAPPER ===== */
+        .date-input-wrap {
+            position: relative;
+            display: flex;
+            align-items: center;
+            flex: 1;
+        }
+
+        .date-input-wrap input[type="text"] {
+            flex: 1;
+            padding-right: 20px;
+        }
+
+        .date-input-wrap .cal-icon {
+            position: absolute;
+            right: 2px;
+            color: var(--red);
+            font-size: 13px;
+            cursor: pointer;
+            pointer-events: none;
+        }
+
+        /* Flatpickr theme override */
+        .flatpickr-calendar {
+            font-size: 12px !important;
+        }
+
+        .flatpickr-day.selected,
+        .flatpickr-day.selected:hover {
+            background: var(--red) !important;
+            border-color: var(--red) !important;
+        }
+
+        .state-code-row {
+            display: flex;
+            gap: 10px;
+            margin-top: 4px;
+        }
+
+        .state-code-row .field-line {
+            flex: 1;
+        }
+
+        /* ===== PRODUCT TABLE ===== */
+        .product-section {
+            font-size: 12px;
+        }
+
+        .product-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .product-table th {
+            background: var(--light-red);
+            color: var(--red);
+            border: 1px solid var(--border);
+            padding: 4px 6px;
+            text-align: center;
+            font-size: 12px;
+        }
+
+        .product-table td {
+            border: 1px solid var(--border);
+            padding: 2px 4px;
+            vertical-align: middle;
+        }
+
+        .product-table td input {
+            width: 100%;
+            border: none;
+            outline: none;
+            font-size: 12px;
+            text-align: center;
+            background: transparent;
+            padding: 1px;
+        }
+
+        .product-table td input.desc-input {
+            text-align: left;
+        }
+
+        .product-table td.action-cell {
+            text-align: center;
+            white-space: nowrap;
+        }
+
+        .btn-remove {
+            background: var(--red);
+            color: #fff;
+            border: none;
+            border-radius: 3px;
+            width: 22px;
+            height: 22px;
+            font-size: 14px;
+            line-height: 1;
+            cursor: pointer;
+            padding: 0;
+        }
+
+        /* ===== BOTTOM SECTION ===== */
+        .bottom-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            border-top: 1.5px solid var(--border);
+            font-size: 12px;
+        }
+
+        .left-bottom {
+            padding: 4px 8px;
+            border-right: 1.5px solid var(--border);
+        }
+
+        .right-bottom {
+            padding: 4px 8px;
+        }
+
+        .bottom-field {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            margin-bottom: 3px;
+        }
+
+        .bottom-field label {
+            font-weight: bold;
+            white-space: nowrap;
+            min-width: 55px;
+        }
+
+        .bottom-field input[type="text"] {
+            border: none;
+            border-bottom: 1px solid #999;
+            outline: none;
+            flex: 1;
+            font-size: 12px;
+            padding: 0 2px;
+            background: transparent;
+        }
+
+        /* ===== TOTALS TABLE ===== */
+        .totals-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+
+        .totals-table td {
+            border: 1px solid var(--border);
+            padding: 3px 6px;
+        }
+
+        .totals-table td.lbl {
+            font-weight: bold;
+            background: var(--light-red);
+            white-space: nowrap;
+        }
+
+        .totals-table td.val {
+            text-align: right;
+        }
+
+        .totals-table td.val input {
+            width: 100%;
+            border: none;
+            outline: none;
+            font-size: 12px;
+            text-align: right;
+            background: transparent;
+        }
+
+        .totals-table td.discount-lbl {
+            font-weight: bold;
+            background: var(--light-red);
+        }
+
+        .discount-pct-input {
+            width: 40px !important;
+            border: none !important;
+            border-bottom: 1px solid #999 !important;
+            outline: none;
+            font-size: 12px;
+            text-align: center;
+            background: transparent;
+        }
+
+        .tax-rate-input {
+            width: 36px;
+            border: none;
+            border-bottom: 1px solid #999;
+            outline: none;
+            font-size: 12px;
+            text-align: center;
+            background: transparent;
+        }
+
+        /* ===== ADD PRODUCT BUTTON (screen only) ===== */
+        .add-row-btn {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--red);
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            padding: 4px 12px;
+            font-size: 12px;
+            cursor: pointer;
+            margin: 4px 8px;
+        }
+
+        /* ===== PRINT STYLES ===== */
+        @media print {
+            body {
+                background: #fff;
+                padding: 0;
+            }
+
+            .screen-controls {
+                display: none !important;
+            }
+
+            .add-row-btn {
+                display: none !important;
+            }
+
+            .btn-remove {
+                display: none !important;
+            }
+
+            .cal-icon {
+                display: none !important;
+            }
+
+            #bill-wrapper {
+                max-width: 100%;
+                border: 2px solid var(--red);
+            }
+
+            input[type="text"],
+            input[type="number"] {
+                border: none !important;
+                outline: none !important;
+                background: transparent !important;
+            }
+
+            select {
+                border: none !important;
+                outline: none !important;
+                background: transparent !important;
+                -webkit-appearance: none;
+                appearance: none;
+                background-image: none !important;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- ===== SCREEN CONTROLS ===== -->
+    <div class="screen-controls d-flex justify-content-between align-items-center">
+        <h5 class="mb-0 text-danger fw-bold"><i class="bi bi-receipt"></i> Yatri Creation – Bill Entry</h5>
+        <div class="d-flex gap-2">
+            <button class="btn btn-outline-secondary btn-sm"
+                onclick="resetBill()">
+                <i class="bi bi-arrow-counterclockwise"></i> Reset
+            </button>
+            <button class="btn btn-danger btn-sm"
+                onclick="printPDF()">
+                <i class="bi bi-file-earmark-pdf"></i> Print / Save PDF
+            </button>
+        </div>
+    </div>
+
+    <!-- ===== BILL ===== -->
+    <div id="bill-wrapper">
+
+        <!-- Top Deco Bar -->
+        <div class="deco-bar"></div>
+
+        <!-- Header -->
+        <div class="bill-header">
+            <div class="top-line">
+                <div style="width:130px;"></div>
+                <div class="tagline">॥ श्री गणेशाय नमः ॥</div>
+                <div class="phone-block">
+                    Ph. 9558662555<br>Mo. 9737760193
+                </div>
+            </div>
+
+            <div class="logo-name-row">
+                <div class="logo-box">YC</div>
+                <div>
+                    <div class="company-name">YATRI CREATION</div>
+                    <div class="company-address">Plot No. 13, 14, 1st Floor, Sai Techno Park, Kosad, Surat.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Info Grid: GST / State / Bill No. / PAN / Code / Date -->
+        <div class="info-grid">
+            <div class="cell"><label>GST No. :</label> 24AQIPJ9611N1ZH</div>
+            <div class="cell"><label>State :</label> Gujarat</div>
+            <div class="cell">
+                <label>Bill No. :</label>
+                <input type="text"
+                    id="billNo"
+                    placeholder="e.g. 1001"
+                    style="width:90px; border:none; border-bottom:1px solid #999; outline:none; font-size:12px; background:transparent;" />
+            </div>
+        </div>
+        <div class="info-grid">
+            <div class="cell"><label>PAN No. :</label> AQIPJ9611N</div>
+            <div class="cell"><label>Code :</label> 24</div>
+            <div class="cell">
+                <label>Date :</label>
+                <!-- Bill Date with calendar -->
+                <div class="date-input-wrap">
+                    <input type="text"
+                        id="billDate"
+                        placeholder="DD/MM/YYYY"
+                        readonly
+                        style="border:none; border-bottom:1px solid #999; outline:none; font-size:12px; background:transparent; cursor:pointer;" />
+                    <i class="bi bi-calendar3 cal-icon"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Customer / Tax Invoice -->
+        <div class="customer-tax-row">
+            <!-- Left: TAX INVOICE + Customer -->
+            <div class="customer-block">
+                <div class="section-title">TAX INVOICE</div>
+                <div class="field-line">
+                    <label>M/s. :</label>
+                    <input type="text"
+                        id="customerName"
+                        placeholder="Customer / Firm Name" />
+                </div>
+                <div class="field-line">
+                    <label>Add. :</label>
+                    <input type="text"
+                        id="customerAddr"
+                        placeholder="Address" />
+                </div>
+            </div>
+
+            <!-- Right: GST No. of customer -->
+            <div class="gst-block">
+                <div class="section-title">GST No.</div>
+                <div class="field-line"
+                    style="margin-top:6px;">
+                    <input type="text"
+                        id="custGST"
+                        placeholder="Customer GST Number"
+                        style="font-size:12px;" />
+                </div>
+                <div class="state-code-row">
+                    <div class="field-line">
+                        <label>State :</label>
+                        <!-- Customer State Dropdown -->
+                        <select id="custState"
+                            class="state-select"
+                            onchange="updateStateCode('custState','custCode')">
+                            <option value="">-- Select --</option>
+                        </select>
+                    </div>
+                    <div class="field-line">
+                        <label>Code :</label>
+                        <input type="text"
+                            id="custCode"
+                            placeholder="Code"
+                            style="width:45px; border:none; border-bottom:1px solid #999; outline:none; font-size:12px; background:transparent;" />
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Product Table -->
+        <div class="product-section">
+            <table class="product-table"
+                id="productTable">
+                <thead>
+                    <tr>
+                        <th style="width:40px;">Sr. No.</th>
+                        <th style="width:70px;">Challan No.</th>
+                        <th>Description</th>
+                        <th style="width:60px;">HSN</th>
+                        <th style="width:50px;">Pcs.</th>
+                        <th style="width:65px;">Rate</th>
+                        <th style="width:75px;">Amount</th>
+                        <th class="screen-only"
+                            style="width:35px;"></th>
+                    </tr>
+                </thead>
+                <tbody id="productBody">
+                    <!-- rows added by JS -->
+                </tbody>
+            </table>
+
+            <!-- Add Row Button -->
+            <button class="add-row-btn screen-only"
+                onclick="addProductRow()">
+                <i class="bi bi-plus-circle"></i> Add Product
+            </button>
+        </div>
+
+        <!-- Bottom: Left (payment info) + Right (totals) -->
+        <div class="bottom-section">
+
+            <!-- Left -->
+            <div class="left-bottom">
+                <!-- Payment Date with calendar -->
+                <div class="bottom-field">
+                    <label>Date :</label>
+                    <div class="date-input-wrap">
+                        <input type="text"
+                            id="payDate"
+                            placeholder="DD/MM/YYYY"
+                            readonly
+                            style="border:none; border-bottom:1px solid #999; outline:none; font-size:12px; background:transparent; cursor:pointer;" />
+                        <i class="bi bi-calendar3 cal-icon"></i>
+                    </div>
+                </div>
+                <div class="bottom-field">
+                    <label>Bank :</label>
+                    <input type="text"
+                        id="payBank"
+                        placeholder="Bank Name" />
+                </div>
+                <div class="bottom-field">
+                    <label>Chaque :</label>
+                    <input type="text"
+                        id="payCheque"
+                        placeholder="Cheque No." />
+                </div>
+                <div class="bottom-field">
+                    <label>Amount :</label>
+                    <input type="text"
+                        id="payAmount"
+                        placeholder="Amount" />
+                </div>
+                <div class="bottom-field">
+                    <label>Bill No. :</label>
+                    <input type="text"
+                        id="payBillNo"
+                        placeholder="Bill No." />
+                </div>
+                <div class="bottom-field">
+                    <label>Sign :</label>
+                    <input type="text"
+                        id="paySign"
+                        placeholder="" />
+                </div>
+
+                <div style="margin-top:6px;">
+                    <strong>Bank Details : Bank Name : Union Bank</strong><br>
+                    Bank A/c. No. : 510101002374306<br>
+                    Bank IFSC Code : UBIN0934585
+                </div>
+
+                <div style="margin-top:6px;">
+                    <strong><em>TERMS &amp; CONDITION :</em></strong>
+                    <ol style="font-size:10px; margin:2px 0 0 0; padding-left:16px;">
+                        <li>Goods Once Sold will not be taken back.</li>
+                        <li>Goods are delivered at owner's risk and insurance option.</li>
+                        <li>Please Check The RF Within 5 Days Otherwise We Are Not Responsible.</li>
+                        <li>Interest will be charged @ 24% p.a.</li>
+                        <li>Subject to SURAT Jurisdiction.</li>
+                    </ol>
+                </div>
+            </div>
+
+            <!-- Right: Totals -->
+            <div class="right-bottom">
+                <table class="totals-table">
+                    <tr>
+                        <td class="lbl">Total Amount</td>
+                        <td class="val"><input type="text"
+                                id="totalAmount"
+                                readonly /></td>
+                    </tr>
+                    <tr>
+                        <td class="discount-lbl">
+                            Less Discount
+                            <input type="number"
+                                class="discount-pct-input"
+                                id="discountPct"
+                                value="0"
+                                min="0"
+                                max="100"
+                                onchange="calcTotals()"
+                                oninput="calcTotals()" />
+                            %
+                        </td>
+                        <td class="val"><input type="text"
+                                id="discountAmt"
+                                readonly /></td>
+                    </tr>
+                    <tr>
+                        <td class="lbl">Total Amount</td>
+                        <td class="val"><input type="text"
+                                id="afterDiscountAmt"
+                                readonly /></td>
+                    </tr>
+                    <tr>
+                        <td class="lbl">
+                            SGST @
+                            <input type="number"
+                                class="tax-rate-input"
+                                id="sgstRate"
+                                value="2.5"
+                                min="0"
+                                step="0.5"
+                                onchange="calcTotals()"
+                                oninput="calcTotals()" />
+                            %
+                        </td>
+                        <td class="val"><input type="text"
+                                id="sgstAmt"
+                                readonly /></td>
+                    </tr>
+                    <tr>
+                        <td class="lbl">
+                            CGST @
+                            <input type="number"
+                                class="tax-rate-input"
+                                id="cgstRate"
+                                value="2.5"
+                                min="0"
+                                step="0.5"
+                                onchange="calcTotals()"
+                                oninput="calcTotals()" />
+                            %
+                        </td>
+                        <td class="val"><input type="text"
+                                id="cgstAmt"
+                                readonly /></td>
+                    </tr>
+                    <tr>
+                        <td class="lbl"
+                            style="font-size:13px; font-weight:900;">Total Amount</td>
+                        <td class="val"
+                            style="font-weight:900; font-size:13px;">
+                            <input type="text"
+                                id="grandTotal"
+                                readonly />
+                        </td>
+                    </tr>
+                </table>
+
+                <!-- Footer signature -->
+                <div style="display:flex; justify-content:space-between; margin-top:10px; font-size:12px;">
+                    <div style="color:var(--red); font-weight:bold; font-size:15px;">For, Yatri Creation</div>
+                    <div style="text-align:right;">Receiver Sign...................</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Deco Bar -->
+        <div class="deco-bar"></div>
+    </div><!-- end #bill-wrapper -->
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // ===== INDIA STATES WITH GST CODE =====
+        const INDIA_STATES = [
+            { name: "Andaman & Nicobar Islands", code: "35" },
+            { name: "Andhra Pradesh", code: "37" },
+            { name: "Arunachal Pradesh", code: "12" },
+            { name: "Assam", code: "18" },
+            { name: "Bihar", code: "10" },
+            { name: "Chandigarh", code: "04" },
+            { name: "Chhattisgarh", code: "22" },
+            { name: "Dadra & Nagar Haveli and Daman & Diu", code: "26" },
+            { name: "Delhi", code: "07" },
+            { name: "Goa", code: "30" },
+            { name: "Gujarat", code: "24" },
+            { name: "Haryana", code: "06" },
+            { name: "Himachal Pradesh", code: "02" },
+            { name: "Jammu & Kashmir", code: "01" },
+            { name: "Jharkhand", code: "20" },
+            { name: "Karnataka", code: "29" },
+            { name: "Kerala", code: "32" },
+            { name: "Ladakh", code: "38" },
+            { name: "Lakshadweep", code: "31" },
+            { name: "Madhya Pradesh", code: "23" },
+            { name: "Maharashtra", code: "27" },
+            { name: "Manipur", code: "14" },
+            { name: "Meghalaya", code: "17" },
+            { name: "Mizoram", code: "15" },
+            { name: "Nagaland", code: "13" },
+            { name: "Odisha", code: "21" },
+            { name: "Puducherry", code: "34" },
+            { name: "Punjab", code: "03" },
+            { name: "Rajasthan", code: "08" },
+            { name: "Sikkim", code: "11" },
+            { name: "Tamil Nadu", code: "33" },
+            { name: "Telangana", code: "36" },
+            { name: "Tripura", code: "16" },
+            { name: "Uttar Pradesh", code: "09" },
+            { name: "Uttarakhand", code: "05" },
+            { name: "West Bengal", code: "19" },
+        ];
+
+        // ===== Populate State Dropdowns =====
+        function populateStateDropdown(selectId, defaultState = "Gujarat") {
+            const sel = document.getElementById(selectId);
+            if (!sel) return;
+            // Clear and add blank option
+            sel.innerHTML = '<option value="">-- Select State --</option>';
+            INDIA_STATES.forEach(st => {
+                const opt = document.createElement('option');
+                opt.value = st.name;
+                opt.dataset.code = st.code;
+                opt.textContent = st.name + " (" + st.code + ")";
+                if (st.name === defaultState) opt.selected = true;
+                sel.appendChild(opt);
+            });
+        }
+
+        // ===== Update state code when state is selected =====
+        function updateStateCode(stateSelectId, codeInputId) {
+            const sel = document.getElementById(stateSelectId);
+            const codeInp = document.getElementById(codeInputId);
+            if (!sel || !codeInp) return;
+            const selected = sel.options[sel.selectedIndex];
+            codeInp.value = selected ? (selected.dataset.code || '') : '';
+        }
+
+        // ===== Flatpickr Date Picker Init =====
+        function initDatePicker(inputId) {
+            flatpickr('#' + inputId, {
+                dateFormat: "d/m/Y",
+                allowInput: false,
+                disableMobile: false,
+                theme: "light",
+            });
+        }
+
+        let rowCount = 0;
+
+        // ===== Add Product Row =====
+        function addProductRow() {
+            rowCount++;
+            const tbody = document.getElementById('productBody');
+            const tr = document.createElement('tr');
+            tr.id = 'row-' + rowCount;
+            tr.innerHTML = `
+      <td><input type="text" value="${rowCount}" style="width:100%; text-align:center; border:none; outline:none; background:transparent; font-size:12px;"/></td>
+      <td><input type="text" placeholder="" style="width:100%; text-align:center; border:none; outline:none; background:transparent; font-size:12px;"/></td>
+      <td><input type="text" class="desc-input" placeholder="Product description" style="width:100%; text-align:left; border:none; outline:none; background:transparent; font-size:12px;"/></td>
+      <td><input type="text" placeholder="" style="width:100%; text-align:center; border:none; outline:none; background:transparent; font-size:12px;"/></td>
+      <td><input type="number" class="pcs-input" placeholder="0" min="0" style="width:100%; text-align:center; border:none; outline:none; background:transparent; font-size:12px;" oninput="calcRow(this)" onchange="calcRow(this)"/></td>
+      <td><input type="number" class="rate-input" placeholder="0.00" min="0" step="0.01" style="width:100%; text-align:center; border:none; outline:none; background:transparent; font-size:12px;" oninput="calcRow(this)" onchange="calcRow(this)"/></td>
+      <td><input type="text" class="amount-input" placeholder="0.00" readonly style="width:100%; text-align:center; border:none; outline:none; background:transparent; font-size:12px;"/></td>
+      <td class="action-cell screen-only">
+        <button class="btn-remove" onclick="removeRow('row-${rowCount}')" title="Remove">−</button>
+      </td>
+    `;
+            tbody.appendChild(tr);
+            reNumberRows();
+        }
+
+        // ===== Remove Row =====
+        function removeRow(id) {
+            const row = document.getElementById(id);
+            if (row) row.remove();
+            reNumberRows();
+            calcTotals();
+        }
+
+        // ===== Re-number Sr. No. =====
+        function reNumberRows() {
+            const rows = document.querySelectorAll('#productBody tr');
+            rows.forEach((tr, idx) => {
+                const srInput = tr.querySelector('td:first-child input');
+                if (srInput) srInput.value = idx + 1;
+            });
+        }
+
+        // ===== Calc a single row amount =====
+        function calcRow(el) {
+            const tr = el.closest('tr');
+            const pcs = parseFloat(tr.querySelector('.pcs-input').value) || 0;
+            const rate = parseFloat(tr.querySelector('.rate-input').value) || 0;
+            const amt = pcs * rate;
+            tr.querySelector('.amount-input').value = amt > 0 ? amt.toFixed(2) : '';
+            calcTotals();
+        }
+
+        // ===== Calc totals =====
+        function calcTotals() {
+            let total = 0;
+            document.querySelectorAll('#productBody .amount-input').forEach(inp => {
+                total += parseFloat(inp.value) || 0;
+            });
+
+            const discPct = parseFloat(document.getElementById('discountPct').value) || 0;
+            const discAmt = (total * discPct) / 100;
+            const afterDiscount = total - discAmt;
+
+            const sgstRate = parseFloat(document.getElementById('sgstRate').value) || 0;
+            const cgstRate = parseFloat(document.getElementById('cgstRate').value) || 0;
+            const sgstAmt = (afterDiscount * sgstRate) / 100;
+            const cgstAmt = (afterDiscount * cgstRate) / 100;
+            const grand = afterDiscount + sgstAmt + cgstAmt;
+
+            document.getElementById('totalAmount').value = total > 0 ? total.toFixed(2) : '';
+            document.getElementById('discountAmt').value = discAmt > 0 ? discAmt.toFixed(2) : '';
+            document.getElementById('afterDiscountAmt').value = afterDiscount > 0 ? afterDiscount.toFixed(2) : '';
+            document.getElementById('sgstAmt').value = sgstAmt > 0 ? sgstAmt.toFixed(2) : '';
+            document.getElementById('cgstAmt').value = cgstAmt > 0 ? cgstAmt.toFixed(2) : '';
+            document.getElementById('grandTotal').value = grand > 0 ? grand.toFixed(2) : '';
+        }
+
+        // ===== Reset =====
+        function resetBill() {
+            if (!confirm('Reset all fields? This will clear the entire bill.')) return;
+            document.getElementById('billNo').value = '';
+            document.getElementById('customerName').value = '';
+            document.getElementById('customerAddr').value = '';
+            document.getElementById('custGST').value = '';
+            document.getElementById('custCode').value = '24';
+            document.getElementById('payBank').value = '';
+            document.getElementById('payCheque').value = '';
+            document.getElementById('payAmount').value = '';
+            document.getElementById('payBillNo').value = '';
+            document.getElementById('paySign').value = '';
+            document.getElementById('discountPct').value = '0';
+            document.getElementById('sgstRate').value = '2.5';
+            document.getElementById('cgstRate').value = '2.5';
+
+            // Reset state dropdowns to Gujarat
+            const custSel = document.getElementById('custState');
+            for (let i = 0; i < custSel.options.length; i++) {
+                if (custSel.options[i].value === 'Gujarat') { custSel.selectedIndex = i; break; }
+            }
+
+            // Reset date pickers
+            if (window._billDatePicker) window._billDatePicker.setDate(new Date(), true);
+            if (window._payDatePicker) window._payDatePicker.clear();
+
+            // Reset product rows
+            document.getElementById('productBody').innerHTML = '';
+            rowCount = 0;
+            for (let i = 0; i < 5; i++) addProductRow();
+            calcTotals();
+        }
+
+        // ===== Print / Save PDF =====
+        function printPDF() {
+            // Before PDF: replace state selects with readable text spans (temporarily)
+            const stateSelects = document.querySelectorAll('.state-select');
+            const savedSelects = [];
+            stateSelects.forEach(sel => {
+                const val = sel.value;
+                const span = document.createElement('span');
+                span.style.cssText = 'font-size:12px;';
+                span.textContent = val;
+                span.className = 'temp-state-span';
+                sel.parentNode.insertBefore(span, sel);
+                sel.style.display = 'none';
+                savedSelects.push(sel);
+            });
+
+            // Hide screen-only elements
+            document.querySelectorAll('.screen-only').forEach(el => el.style.display = 'none');
+
+            const element = document.getElementById('bill-wrapper');
+            const billNo = document.getElementById('billNo').value || 'bill';
+            const opt = {
+                margin: [5, 5, 5, 5],
+                filename: `YatriCreation_Invoice_${billNo}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, useCORS: true, logging: false },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                pagebreak: { mode: 'avoid-all' }
+            };
+
+            html2pdf().set(opt).from(element).toPdf().get('pdf').then(function(pdf) {
+                const blob = pdf.output('blob');
+                const url = URL.createObjectURL(blob);
+                window.open(url, '_blank');
+            }).finally(() => {
+                // Restore screen-only elements
+                document.querySelectorAll('.screen-only').forEach(el => el.style.display = '');
+                // Restore state selects
+                savedSelects.forEach(sel => sel.style.display = '');
+                document.querySelectorAll('.temp-state-span').forEach(s => s.remove());
+            });
+        }
+
+        // ===== INIT =====
+        window.onload = function() {
+            // Populate state dropdown
+            populateStateDropdown('custState', 'Gujarat');
+            updateStateCode('custState', 'custCode');
+
+            // Init date pickers
+            window._billDatePicker = flatpickr('#billDate', {
+                dateFormat: "d/m/Y",
+                defaultDate: new Date(),
+                allowInput: false,
+                disableMobile: false,
+            });
+
+            window._payDatePicker = flatpickr('#payDate', {
+                dateFormat: "d/m/Y",
+                allowInput: false,
+                disableMobile: false,
+            });
+
+            // Init 8 product rows
+            for (let i = 0; i < 5; i++) addProductRow();
+        };
+    </script>
+</body>
+
+</html>
